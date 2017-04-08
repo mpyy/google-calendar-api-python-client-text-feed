@@ -25,8 +25,8 @@ from os.path import expanduser, realpath, dirname, join
 
 altuser = ''
 myuser = ''
-GCALFEED_IN = 'gcal_feeds.txt'
-GCALFEED_OUT = ’~/Documents/.gcalfeed.out'
+GCALFEED_CONFIG = 'gcal_feeds.config'
+GCALFEED_OUT = 'gcal_feeds.out'
 
 
 # TODO: Implement as class files
@@ -185,7 +185,7 @@ class WorkCalFeed(CalFeed):
 
 class Event:
 	# Constants
-	WEEKDAYS = ['ma', 'ti', 'ke', 'to', 'pe', 'la', 'su']
+	WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 	ANSI_CSI = '\x1b['
 	ANSI_RESET = ANSI_CSI + '0m'
 	
@@ -298,12 +298,12 @@ def main(argv):
   GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
   
   # Calendar feeds defined as JSON file
-  infile = join(script_real_path, GCALFEED_IN)
+  infile = join(script_real_path, GCALFEED_CONFIG)
   with open(infile) as f:
     all_cals = json.load(f)
   
   scope = 'https://www.google.com/calendar/feeds/'
-  outfile = expanduser(GCALFEED_OUT)
+  outfile = join(script_real_path, GCALFEED_OUT)
   
   # 2017-02-25: Moved gflags here
   FLAGS = gflags.FLAGS
