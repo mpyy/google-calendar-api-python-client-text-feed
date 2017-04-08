@@ -25,7 +25,7 @@ from os.path import expanduser, realpath, dirname, join
 
 altuser = ''
 myuser = ''
-GCALFEED_CONFIG = 'gcal_feeds.config'
+GCALFEED_CONFIG = 'config.json'
 GCALFEED_OUT = 'gcal_feeds.out'
 
 
