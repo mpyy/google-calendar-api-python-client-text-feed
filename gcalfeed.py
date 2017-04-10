@@ -250,7 +250,7 @@ class Event:
         # Replace with colored items using a Python list comprehension
         for i,x in enumerate(content):
             # skip first column and empty columns
-            if i > 0 and x <> '':
+            if i > 0 and x != '':
                 content[i] = self.ansi_color(x)
 
             retval = '\t'.join(content)
@@ -287,7 +287,7 @@ def main(argv):
     myuser = getlogin()
     altuser = ''
     for x in users:
-        if myuser <> x:
+        if myuser != x:
             altuser = x
             break
 
@@ -430,7 +430,9 @@ def main(argv):
         # If using GeekTool, refresh the widgets. See https://www.tynsoe.org and http://flipmartin.net/software/applescript-tips-for-geektool-3
         # system("osascript -e 'tell application \"GeekTool Helper\" to refresh all'")
     else:
-        print ('\n'.join(sorted(events))).encode('utf8')
+        str = '\n'.join(sorted(events))
+        if str: print (str)
+        # if str: print (str.encode('utf8'))
 
 
 if __name__ == '__main__':
