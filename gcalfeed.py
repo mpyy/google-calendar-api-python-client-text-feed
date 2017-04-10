@@ -104,29 +104,29 @@ class CalFeed:
       try:
         # if self.to_datetime(an_event['end']['dateTime']) < datetime.now():
         if self.to_datetime(self.get_eventdate(an_event['end'])) < datetime.now():
-                  continue
+            continue
       except KeyError:
         # if self.to_datetime(an_event['end']['date']) < datetime.now():
         if self.to_datetime(self.get_eventdate(an_event['end'])) < datetime.now():
-                  continue
+            continue
 
             # skip entries based on their transparency
       if self.transparents == 'no':
-                if an_event['transparency'].value.lower() == self.GDATA_TRANSPARENT.lower():
-                    # Don't skip if the calendar is a "common" calendar
-                    # TODO: Implement event feed configuration as a JSON file so transparency can be set for each calendar
-                    if self.owner != 'common':
-                        continue
+          if an_event['transparency'].value.lower() == self.GDATA_TRANSPARENT.lower():
+            # Don't skip if the calendar is a "common" calendar
+            # TODO: Implement event feed configuration as a JSON file so transparency can be set for each calendar
+            if self.owner != 'common':
+                continue
       elif self.transparents == 'only':
-                if an_event['transparency'].value.lower() != self.GDATA_TRANSPARENT.lower():
-                    # Don't skip if the calendar is a "common" calendar
-                    # TODO: Change transparency to be selected calendar by calendar
-                    if self.owner != 'common':
-                        continue
+        if an_event['transparency'].value.lower() != self.GDATA_TRANSPARENT.lower():
+        # Don't skip if the calendar is a "common" calendar
+        # TODO: Change transparency to be selected calendar by calendar
+            if self.owner != 'common':
+                continue
 
       # if self.exclude_event(an_event, a_when):
       if self.exclude_event(an_event):
-                continue
+          continue
 
             # Append to the events list
       # self.events.append(self.make_event(self, title, a_when))
@@ -252,7 +252,8 @@ class Event:
             # skip first column and empty columns
             if i > 0 and x <> '':
                 content[i] = self.ansi_color(x)
-        retval = '\t'.join(content)
+
+            retval = '\t'.join(content)
         return retval
 
 
@@ -277,160 +278,160 @@ class WorkEvent(Event):
 
 # Main
 def main(argv):
-  global altuser
-  global myuser
-  global users
-  global service
+    global altuser
+    global myuser
+    global users
+    global service
 
-  users = ('my_user_name', 'another_user_name')
-  myuser = getlogin()
-  altuser = ''
-  for x in users:
-    if myuser <> x:
-      altuser = x
-      break
+    users = ('my_user_name', 'another_user_name')
+    myuser = getlogin()
+    altuser = ''
+    for x in users:
+        if myuser <> x:
+            altuser = x
+            break
 
-  # 2017-02-25: Set up data for OAuth Flow object (client secrets):
+    # 2017-02-25: Set up data for OAuth Flow object (client secrets):
 
-  script_real_path = dirname(realpath(__file__))
-  CLIENT_SECRETS = join(script_real_path, 'client_secrets.json')
-  OAUTH2_STORAGE = join(script_real_path, 'calendar.dat')
-  GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
+    script_real_path = dirname(realpath(__file__))
+    CLIENT_SECRETS = join(script_real_path, 'client_secrets.json')
+    OAUTH2_STORAGE = join(script_real_path, 'calendar.dat')
+    GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
 
-  # Calendar feeds defined as JSON file
-  infile = join(script_real_path, GCALFEED_CONFIG)
-  with open(infile) as f:
-    all_cals = json.load(f)
+    # Calendar feeds defined as JSON file
+    infile = join(script_real_path, GCALFEED_CONFIG)
+    with open(infile) as f:
+        all_cals = json.load(f)
 
-  scope = 'https://www.google.com/calendar/feeds/'
-  outfile = join(script_real_path, GCALFEED_OUT)
+    scope = 'https://www.google.com/calendar/feeds/'
+    outfile = join(script_real_path, GCALFEED_OUT)
 
-  # 2017-02-25: Moved gflags here
-  FLAGS = gflags.FLAGS
+    # 2017-02-25: Moved gflags here
+    FLAGS = gflags.FLAGS
 
-  LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
-  gflags.DEFINE_enum('logging_level', 'INFO', LOG_LEVELS, 'Set the level of logging detail.')
-  gflags.DEFINE_boolean('noauth_local_webserver', False, 'Disable the local server feature.')
-  gflags.DEFINE_list('auth_host_port', [8080, 8090], 'Set the auth host port.')
-  gflags.DEFINE_string('auth_host_name', 'localhost', 'Set the auth host name.')
+    LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+    gflags.DEFINE_enum('logging_level', 'INFO', LOG_LEVELS, 'Set the level of logging detail.')
+    gflags.DEFINE_boolean('noauth_local_webserver', False, 'Disable the local server feature.')
+    gflags.DEFINE_list('auth_host_port', [8080, 8090], 'Set the auth host port.')
+    gflags.DEFINE_string('auth_host_name', 'localhost', 'Set the auth host name.')
 
-  # To disable the local server feature, uncomment the following line:
-  # FLAGS.auth_local_webserver = False
-  # FLAGS.noauth_local_webserver = True
+    # To disable the local server feature, uncomment the following line:
+    # FLAGS.auth_local_webserver = False
+    # FLAGS.noauth_local_webserver = True
 
-  # 2017-02-25: Parse arguments first before initiating OAuth2 Flow
+    # 2017-02-25: Parse arguments first before initiating OAuth2 Flow
 
-  parser = argparse.ArgumentParser(
-    description='Fetch Calendar data',
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    parents=[tools.argparser])
+    parser = argparse.ArgumentParser(
+        description='Fetch Calendar data',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        parents=[tools.argparser])
 
-  parser.add_argument('-d', '--days', action='store', dest='days', type=int, help='number of days to fetch events')
-  parser.add_argument('-c', '--cals', action='append', dest='cals', help='calendars to fetch')
-  parser.add_argument('-t', '--test', action='store', dest='test', choices=('yes','no'), help='don\'t write to file')
-  parser.add_argument('-u', '--user', action='store', dest='user', help='switch current user')
-  parser.add_argument('-r', '--transparents', action='store', dest='transparents', choices=('only','no','both'), help='select what to do with transparent events')
+    parser.add_argument('-d', '--days', action='store', dest='days', type=int, help='number of days to fetch events')
+    parser.add_argument('-c', '--cals', action='append', dest='cals', help='calendars to fetch')
+    parser.add_argument('-t', '--test', action='store', dest='test', choices=('yes','no'), help='don\'t write to file')
+    parser.add_argument('-u', '--user', action='store', dest='user', help='switch current user')
+    parser.add_argument('-r', '--transparents', action='store', dest='transparents', choices=('only','no','both'), help='select what to do with transparent events')
 
-  parser.set_defaults(days=7, cals=[myuser], test='no', skip='yes')
+    parser.set_defaults(days=7, cals=[myuser], test='no', skip='yes')
 
-  # Parse the command-line flags.
-  flags = parser.parse_args(argv[1:])
+    # Parse the command-line flags.
+    flags = parser.parse_args(argv[1:])
 
-  if flags.days < 1 or flags.days > 365:
-    parser.error("-d, --days option must be between 1 and 365")
+    if flags.days < 1 or flags.days > 365:
+        parser.error("-d, --days option must be between 1 and 365")
 
-  if flags.user != None:
-      altuser = myuser
-      myuser = flags.user
+    if flags.user != None:
+        altuser = myuser
+        myuser = flags.user
 
-  delta = timedelta(flags.days)
+    delta = timedelta(flags.days)
 
-  for x in flags.cals:
-    if x not in [y['name'] for y in all_cals]:
-      parser.error("-c, --cals option not defined: " + x)
+    for x in flags.cals:
+        if x not in [y['name'] for y in all_cals]:
+            parser.error("-c, --cals option not defined: " + x)
 
-  # Set up a Flow object to be used if we need to authenticate. This
-  # sample uses OAuth 2.0, and we set up the OAuth2WebServerFlow with
-  # the information it needs to authenticate. Note that it is called
-  # the Web Server Flow, but it can also handle the flow for native
-  # applications
-  # The client_id and client_secret can be found in Google Developers Console
+    # Set up a Flow object to be used if we need to authenticate. This
+    # sample uses OAuth 2.0, and we set up the OAuth2WebServerFlow with
+    # the information it needs to authenticate. Note that it is called
+    # the Web Server Flow, but it can also handle the flow for native
+    # applications
+    # The client_id and client_secret can be found in Google Developers Console
 
-  # Perform OAuth 2.0 authorization.
-  FLOW = flow_from_clientsecrets(CLIENT_SECRETS, scope=GCAL_SCOPE)
+    # Perform OAuth 2.0 authorization.
+    FLOW = flow_from_clientsecrets(CLIENT_SECRETS, scope=GCAL_SCOPE)
 
-  # If the Credentials don't exist or are invalid, run through the native client
-  # flow. The Storage object will ensure that if successful the good
-  # Credentials will get written back to a file.
-  storage = Storage(OAUTH2_STORAGE)
-  credentials = storage.get()
+    # If the Credentials don't exist or are invalid, run through the native client
+    # flow. The Storage object will ensure that if successful the good
+    # Credentials will get written back to a file.
+    storage = Storage(OAUTH2_STORAGE)
+    credentials = storage.get()
 
-  if credentials is None or credentials.invalid:
-    credentials = run_flow(FLOW, storage, FLAGS)
+    if credentials is None or credentials.invalid:
+        credentials = run_flow(FLOW, storage, FLAGS)
 
-  #if credentials is None or credentials.invalid == True:
-  #  credentials = run(FLOW, storage)
+    #if credentials is None or credentials.invalid == True:
+    #  credentials = run(FLOW, storage)
 
-  # Create an httplib2.Http object to handle our HTTP requests and authorize it
-  # with our good Credentials.
-  http = httplib2.Http()
-  http = credentials.authorize(http)
+    # Create an httplib2.Http object to handle our HTTP requests and authorize it
+    # with our good Credentials.
+    http = httplib2.Http()
+    http = credentials.authorize(http)
 
-  # Build a service object for interacting with the API. Visit
-  # the Google Developers Console
-  # to get a developerKey for your own application.
-  service = build(serviceName='calendar', version='v3', http=http)
+    # Build a service object for interacting with the API. Visit
+    # the Google Developers Console
+    # to get a developerKey for your own application.
+    service = build(serviceName='calendar', version='v3', http=http)
 
-  start_date = date.today()
-  end_date = start_date+delta
+    start_date = date.today()
+    end_date = start_date+delta
 
 
-  def in_option_cals(x):
-    return x['name'] in flags.cals
+    def in_option_cals(x):
+        return x['name'] in flags.cals
 
-  def make_calfeed(special):
-      retval = None
-      if special:
-          retval = WorkCalFeed()
-      else:
-          retval = CalFeed()
-      return retval
+    def make_calfeed(special):
+        retval = None
+        if special:
+            retval = WorkCalFeed()
+        else:
+            retval = CalFeed()
+        return retval
 
-  # Set up calendar feeds
-  calfeeds = []
-  for a_cal in filter(in_option_cals, all_cals):
-      a_calfeed = make_calfeed(a_cal['special'])
-      transparents = a_cal['transparents']
-      if flags.transparents != None:
-          if flags.transparents.lower() == 'only':
-              transparents = 'only'
-          elif flags.transparents.lower() == 'no':
-              transparents = 'no'
-          else:
-              transparents = 'both'
+    # Set up calendar feeds
+    calfeeds = []
+    for a_cal in filter(in_option_cals, all_cals):
+        a_calfeed = make_calfeed(a_cal['special'])
+        transparents = a_cal['transparents']
+        if flags.transparents != None:
+            if flags.transparents.lower() == 'only':
+                transparents = 'only'
+            elif flags.transparents.lower() == 'no':
+                transparents = 'no'
+            else:
+                transparents = 'both'
 
-      a_calfeed.setup(a_cal['name'], a_cal['owner'], a_cal['userID'], a_cal['visibility'], a_cal['projection'], transparents, a_cal['hilitecolor'], start_date, end_date)
-      calfeeds.append(a_calfeed)
+        a_calfeed.setup(a_cal['name'], a_cal['owner'], a_cal['userID'], a_cal['visibility'], a_cal['projection'], transparents, a_cal['hilitecolor'], start_date, end_date)
+        calfeeds.append(a_calfeed)
 
-  # Parse events
-  events = []
-  for a_calfeed in calfeeds:
-      a_calfeed.fetch_events()
-      # DEBUG: print a_calfeed.name + '\t' + str(a_calfeed.count()) + '\t' + str(a_calfeed)
-      # DEBUG: events.append('-- ' + a_calfeed.name + ' --')
-      events.extend(a_calfeed.list_events())
+    # Parse events
+    events = []
+    for a_calfeed in calfeeds:
+        a_calfeed.fetch_events()
+        # DEBUG: print a_calfeed.name + '\t' + str(a_calfeed.count()) + '\t' + str(a_calfeed)
+        # DEBUG: events.append('-- ' + a_calfeed.name + ' --')
+        events.extend(a_calfeed.list_events())
 
-  # DEBUG: print len(events)
+    # DEBUG: print len(events)
 
-  if flags.test == 'no':
-      # with open(outfile, 'w') as f:
-      with codecs.open(outfile, encoding='utf-8', mode='w') as f:
-          f.write('\n'.join(sorted(events)))
-      # If using GeekTool, refresh the widgets. See https://www.tynsoe.org and http://flipmartin.net/software/applescript-tips-for-geektool-3
-      # system("osascript -e 'tell application \"GeekTool Helper\" to refresh all'")
-  else:
-      print ('\n'.join(sorted(events))).encode('utf8')
+    if flags.test == 'no':
+        # with open(outfile, 'w') as f:
+        with codecs.open(outfile, encoding='utf-8', mode='w') as f:
+            f.write('\n'.join(sorted(events)))
+        # If using GeekTool, refresh the widgets. See https://www.tynsoe.org and http://flipmartin.net/software/applescript-tips-for-geektool-3
+        # system("osascript -e 'tell application \"GeekTool Helper\" to refresh all'")
+    else:
+        print ('\n'.join(sorted(events))).encode('utf8')
 
 
 if __name__ == '__main__':
-  main(sys.argv)
+    main(sys.argv)
