@@ -24,4 +24,4 @@ if options.col >= len(data[0]):
     parser.error("-c option maximum value is %s" % (len(data[0])-1,))
 
 for entry in data:
-    print entry[options.col].strip()
+    print (entry[options.col].strip())
