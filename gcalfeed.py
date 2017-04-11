@@ -23,18 +23,23 @@ import time
 from os import getlogin, system
 from os.path import expanduser, realpath, dirname, join
 
+GCALFEED_CONFIG = 'config.json'
 altuser = ''
 myuser = ''
-GCALFEED_CONFIG = 'config.json'
-GCALFEED_OUT = 'gcal_feeds.out'
+config = ''
 
+# Read configuration defined in a JSON file
+script_real_path = dirname(realpath(__file__))
+infile = join(script_real_path, GCALFEED_CONFIG)
+with open(infile) as f:
+    config = json.load(f)
 
 # TODO: Implement as class files
 class CalFeed:
   # Constants
   GDATA_TRANSPARENT = 'transparent'
   ORDERBY = 'startTime'
-  TZ = 'Europe/Helsinki'
+  TZ = config['time_zone']
 
   def __init__(self):
       # Members
@@ -48,8 +53,8 @@ class CalFeed:
       self.userID = userID
       self.visibility = visibility
       self.transparents = transparents
-      self.start_date = start_date.isoformat() + 'T00:00:00Z'
-      self.end_date = end_date.isoformat() + 'T00:00:00Z'
+      self.start_date = start_date.isoformat() + config['gdata_constants']['midnightISO8601']
+      self.end_date = end_date.isoformat() + config['gdata_constants']['midnightISO8601']
       self.projection = projection
       self.hilitecolor = hilitecolor
 
@@ -185,7 +190,7 @@ class WorkCalFeed(CalFeed):
 
 class Event:
     # Constants
-    WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    WEEKDAYS = config['weekdays']
     ANSI_CSI = '\x1b['
     ANSI_RESET = ANSI_CSI + '0m'
 
@@ -282,6 +287,7 @@ def main(argv):
     global myuser
     global users
     global service
+    global config
 
     users = ('my_user_name', 'another_user_name')
     myuser = getlogin()
@@ -294,17 +300,16 @@ def main(argv):
     # 2017-02-25: Set up data for OAuth Flow object (client secrets):
 
     script_real_path = dirname(realpath(__file__))
-    CLIENT_SECRETS = join(script_real_path, 'client_secrets.json')
-    OAUTH2_STORAGE = join(script_real_path, 'calendar.dat')
-    GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
+    gdata_constants = config['gdata_constants']
+    CLIENT_SECRETS = join(script_real_path, gdata_constants['secrets'])
+    OAUTH2_STORAGE = join(script_real_path, gdata_constants['datfile'])
+    GCAL_SCOPE = gdata_constants['gcal_scope']
 
-    # Calendar feeds defined as JSON file
-    infile = join(script_real_path, GCALFEED_CONFIG)
-    with open(infile) as f:
-        all_cals = json.load(f)
+    # Calendar feeds defined in the config JSON file
+    all_cals = config['calendars']
 
     scope = 'https://www.google.com/calendar/feeds/'
-    outfile = join(script_real_path, GCALFEED_OUT)
+    outfile = join(script_real_path, config['outfile'])
 
     # 2017-02-25: Moved gflags here
     FLAGS = gflags.FLAGS
